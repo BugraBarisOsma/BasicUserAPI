@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
-var createError = require("http-errors")
+const createError = require("http-errors")
+const Joi  = require('@hapi/joi');
 
 router.get("/", async (req, res,next) => {
  try {
@@ -30,9 +31,16 @@ router.get("/:id", (req, res,next) => {
 router.post("/", async (req, res,next) => {
   try {
     const newUser = new User(req.body);
-    const addUser = await newUser.save();
-    res.send(addUser);
-    console.log("succesfully added");
+    const {error,result} = newUser.joiValidation(req.body);
+    if(error){
+      next(createError(400,error))
+    } else {
+      const addUser = await newUser.save();
+      res.send(addUser);
+      console.log("succesfully added");
+    }
+   
+    
   } catch (err) {
     next(createError(400,err))
   }
@@ -50,7 +58,7 @@ router.patch("/:id", async (req, res,next) => {
       throw createError = (404,"User not found")
     }
   } catch (err) {
-    next(createError(404,err))
+    next(createError(400,err))
   }
 });
 
@@ -62,11 +70,12 @@ router.delete("/:id", async (req, res,next) => {
         message: "User with id " + req.params.id + " has been deleted",
       });
     } else {
-    
+
       throw createError = (404,"User not found")
     }
   } catch (err) {
-    next(createError(404,err))
+    
+    next(createError(400,err))
   }
 });
 module.exports = router; // export ile buraya disardan erisim saglanir

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const Joi = require('@hapi/joi');
 
 const userSchema = new Schema({
   name: {
@@ -31,6 +32,17 @@ const userSchema = new Schema({
   }
 },{collection:'Users',timestamps:true}); // database'e users olarak kaydedecek
 //timestamps burada createdAt ve updatedAt propertylerini ekler
+userSchema.methods.joiValidation = function (userObject){
+
+  const schema = Joi.object({
+    name : Joi.string().min(3).max(50).trim().required(),
+    userName : Joi.string().min(3).max(50).trim().required(),
+    email : Joi.string().min(3).max(50).trim().email().required(),
+    password : Joi.string().trim().required(),
+  });
+  return schema.validate(userObject)
+}
 const User = mongoose.model('User', userSchema)
+
 
 module.exports = User
